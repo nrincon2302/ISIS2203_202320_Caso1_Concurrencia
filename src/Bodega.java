@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Bodega {
     // ================== ATRIBUTOS ==================
     private int tamanio;
@@ -19,9 +21,6 @@ public class Bodega {
     public void quitarDeBodega() {
         if (contenido.size() != 0) {
             contenido.remove(0);
-        }
-        else {
-            Thread.wait();
         }
     }
 }
