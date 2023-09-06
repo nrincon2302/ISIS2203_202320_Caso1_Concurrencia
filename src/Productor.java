@@ -1,19 +1,21 @@
 public class Productor extends Thread {
     // ================== ATRIBUTOS ==================
-    private static int totalProductos;
     private int id;
-    private int yoProduzco;
-
+    private static Bodega bodega;
 
     // ================== CONSTRUCTOR ==================
-    public Productor(int pId, int pTotal) {
+    public Productor(int pId, Bodega pBodega) {
         this.id = pId;
-        totalProductos = pTotal;
+        bodega = pBodega;
     }
 
     // ================== MÉTODOS ==================
     @Override
     public void run() {
+
+    }
+
+    public void producirProducto() {
 
     }
 

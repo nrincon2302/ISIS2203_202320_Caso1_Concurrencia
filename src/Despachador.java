@@ -1,9 +1,10 @@
 public class Despachador extends Thread {
     // ================== ATRIBUTOS ==================
+    private static Bodega bodega;
 
     // ================== CONSTRUCTOR ==================
-    public Despachador() {
-
+    public Despachador(Bodega pBodega) {
+        bodega = pBodega;
     }
 
     // ================== MÉTODOS ==================

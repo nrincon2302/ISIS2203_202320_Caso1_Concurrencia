@@ -35,18 +35,21 @@ public class Principal {
                             "TOTAL A PRODUCIR: " + totalProductos + "\n");
         System.out.println("Inicia el proceso... \n");
 
+        // Creación de la Bodega del programa
+        Bodega bodega = new Bodega(TAM);
+
         // Creación e inicialización de los Threads Productores
         for (int p=0; p<N; p++) {
-            new Productor(p,N).start();
+            new Productor(p, bodega).start();
         }
 
         // Creación e inicialización de los Threads Repartidores
         for (int r=0; r<M; r++) {
-            new Repartidor(r).start();
+            new Repartidor(r, bodega).start();
         }
 
         // Creación e inicialización del Thread Despachador
-        new Despachador().start();
+        new Despachador(bodega).start();
 
 
     }
