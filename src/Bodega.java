@@ -13,25 +13,14 @@ public class Bodega {
 
     // ================== MÉTODOS ==================
     public int darDisponibilidad() {
-        return contenido.size() - tamanio;
+        return tamanio - contenido.size();
     }
 
-    public synchronized void agregarABodega(Object p) {
-        if (darDisponibilidad() > 0) {
-            contenido.add(p);
-            System.out.println("Se ha agregado un producto a la bodega");
-        }
-        else {
-            System.out.println("No se ha agregado el producto. La bodega está llena");
-        }
+    public void agregarABodega(Object p) {
+        contenido.add(p);
     }
 
-    public synchronized void quitarDeBodega() {
-        if (!contenido.isEmpty()) {
-            contenido.remove(0);
-        }
-        else {
-            System.out.println("La bodega se encuentra vacía, no se puede retirar ningún producto");
-        }
+    public void quitarDeBodega() {
+        contenido.remove(0);
     }
 }

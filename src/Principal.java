@@ -38,18 +38,21 @@ public class Principal {
         // Creación de la Bodega del programa
         Bodega bodega = new Bodega(TAM);
 
+        // Asignación de la cantidad a producir de forma aleatoria
+
+
         // Creación e inicialización de los Threads Productores
         for (int p=0; p<N; p++) {
-            new Productor(p, bodega).start();
+            new Productor(p, bodega, 4).start();
         }
 
         // Creación e inicialización de los Threads Repartidores
-        for (int r=0; r<M; r++) {
-            new Repartidor(r, bodega).start();
-        }
+        //for (int r=0; r<M; r++) {
+        //    new Repartidor(r, bodega).start();
+        //}
 
         // Creación e inicialización del Thread Despachador
-        new Despachador(bodega).start();
+        //new Despachador(bodega).start();
 
 
     }
