@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Bodega {
     // ================== ATRIBUTOS ==================
     private int tamanio;
-    private ArrayList<Object> contenido;
+    private ArrayList<Producto> contenido;
 
     // ================== CONSTRUCTOR ==================
     public Bodega(int TAM) {
@@ -12,15 +12,22 @@ public class Bodega {
     }
 
     // ================== MÉTODOS ==================
+    public int darTamanio() {
+        return tamanio;
+    }
+
     public int darDisponibilidad() {
         return tamanio - contenido.size();
     }
 
-    public void agregarABodega(Object p) {
+    public synchronized void agregarABodega(Producto p) {
+        // Sincronizado para evitar que muchos agreguen al tiempo
         contenido.add(p);
     }
 
-    public void quitarDeBodega() {
-        contenido.remove(0);
+    public Producto quitarDeBodega() {
+        // No tiene que ser sincronizado porque sólo el despachador quita
+        Producto p = contenido.remove(0);
+        return p;
     }
 }

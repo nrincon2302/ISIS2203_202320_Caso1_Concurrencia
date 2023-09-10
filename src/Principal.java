@@ -42,7 +42,7 @@ public class Principal {
 
 
         // Creación e inicialización de los Threads Productores
-        for (int p=0; p<N; p++) {
+        for (int p=1; p<=N; p++) {
             new Productor(p, bodega, 4).start();
         }
 
@@ -52,7 +52,7 @@ public class Principal {
         //}
 
         // Creación e inicialización del Thread Despachador
-        //new Despachador(bodega).start();
+        new Despachador(bodega).start();
 
 
     }
