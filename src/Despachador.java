@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Despachador extends Thread {
     // ================== ATRIBUTOS ==================
-    private static Bodega bodega; // La bodega se comparte con los productores
+    private Bodega bodega; // La bodega se comparte con los productores, no estática (hay un despachador)
     private Producto productoActual; // El despachador tiene sólo un producto en su poder en un momento dado
     private ArrayList<Repartidor> repartidores; // El despachador conoce a los repartidores
     private int totalACompletar;
@@ -29,17 +29,28 @@ public class Despachador extends Thread {
         p.cambiarEstado("En despacho");
         productoActual = p;
 
-        // Sincronizar sobre el producto retirado
-        synchronized (productoActual) {
-            System.out.println("Despachador: El producto " + productoActual.getId() + " ha sido retirado de bodega."
-                                + "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado() + "\n");
-            // Espera pasivamente sobre el producto hasta que sea recogido por un repartidor
+        // Intenta entregarle un producto a un repartidor que esté disponible
+        while (productoActual != null) {
+            for (Repartidor repartidor : repartidores) {
+                // Si el repartidor está disponible, su producto actual es null
+                if (repartidor.darProductoActual() == null) {
+                    repartidor.recogerProducto(productoActual);
+                    productoActual = null;
+                }
+            }
+        }
+
+        // Si no se entrega el producto, espera pasivamente sobre sí mismo
+        synchronized (this) {
             try {
-                productoActual.wait();
+                System.out.println("Despachador: No hay repartidores disponibles. No se despachó el producto." +
+                                    "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
+                wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+
     }
 
     public int getTotalACompletar() {
