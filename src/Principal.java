@@ -46,14 +46,13 @@ public class Principal {
             new Productor(p, bodega, 4).start();
         }
 
-        // Creación e inicialización de los Threads Repartidores
-        //for (int r=0; r<M; r++) {
-        //    new Repartidor(r, bodega).start();
-        //}
-
         // Creación e inicialización del Thread Despachador
-        new Despachador(bodega).start();
+        Despachador despachador = new Despachador(bodega, totalProductos);
+        despachador.start();
 
-
+        // Creación e inicialización de los Threads Repartidores
+        for (int r=0; r<M; r++) {
+            new Repartidor(r, bodega, despachador).start();
+        }
     }
 }
