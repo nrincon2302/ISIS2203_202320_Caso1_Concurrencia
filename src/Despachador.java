@@ -18,16 +18,17 @@ public class Despachador extends Thread {
     public void run() {
         // Mientras que la bodega esté vacía, espera activamente realizando otro método
         while (bodega.darDisponibilidad() == bodega.darTamanio()) {
-            System.out.println("Despachador: No hay productos en bodega");
             esperarActivamente();
         }
         // Si hay un producto en bodega, puede retirarlo
         Producto p = retirarDeBodega();
+        p.cambiarEstado("En despacho");
         productoActual = p;
         // Sincronizar sobre el producto retirado
         synchronized (productoActual) {
-            System.out.println("Despachador: El producto " + p.getId() + " ha sido retirado de bodega");
-            p.cambiarEstado("Despachado");
+            System.out.println("Despachador: El producto " + productoActual.getId() + " ha sido retirado de bodega"
+                                + "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado() + "\n");
+            // Espera pasivamente sobre el producto hasta que sea recogido por un repartidor
             try {
                 productoActual.wait();
             } catch (InterruptedException e) {
@@ -42,6 +43,7 @@ public class Despachador extends Thread {
 
     public void esperarActivamente() {
         // Se realiza una acción cualquiera no tan larga
+        System.out.println("Despachador: Esperando a que haya productos en bodega...");
         int contador = 0;
         for (int j=0; j<100; j++) {
             contador += j;

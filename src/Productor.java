@@ -23,7 +23,8 @@ public class Productor extends Thread {
                 // Si la bodega está llena, espera pasivamente sobre la bodega
                 while (bodega.darDisponibilidad() == 0) {
                     try {
-                        System.out.println("Productor " + id + ": La bodega está llena. No se agregó el producto " + producto.getId());
+                        System.out.println("Producto " + producto.getId() + ": " + producto.getEstado() +
+                                "\nProductor " + id + ": La bodega está llena. No se agregó el producto " + producto.getId() + "\n");
                         bodega.wait();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
@@ -31,7 +32,10 @@ public class Productor extends Thread {
                 }
                 // De lo contrario, agrega el producto al almacén de la bodega
                 bodega.agregarABodega(producto);
-                System.out.println("Productor " + id + ": Hay espacio en bodega. Se agregó el producto " + producto.getId());
+                producto.cambiarEstado("En bodega");
+                System.out.println("Producto " + producto.getId() + ": Producido por Productor " + id +
+                                    "\nProductor " + id + ": Hay espacio en bodega. Se agregó el producto " + producto.getId()
+                                    + "\nProducto " + producto.getId() + ": " + producto.getEstado() + "\n");
             }
             // Sincronizar con respecto al producto
             synchronized (producto) {
