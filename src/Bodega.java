@@ -30,4 +30,5 @@ public class Bodega {
         Producto p = contenido.remove(0);
         return p;
     }
+
 }

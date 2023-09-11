@@ -24,15 +24,32 @@ public class Despachador extends Thread {
         Producto p = retirarDeBodega();
         p.cambiarEstado("En despacho");
         productoActual = p;
-        // Sincronizar sobre el producto retirado
-        synchronized (productoActual) {
-            System.out.println("Despachador: El producto " + productoActual.getId() + " ha sido retirado de bodega"
+
+        // Espera pasivamente sobre el producto hasta que sea recogido por un repartidor
+        try {
+            productoActual.wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        Repartidor repartidorDisponible = null;
+        synchronized (repartidores){
+            for(Repartidor repartidor : repartidores){
+                if(!repartidor.estaOcupado()){
+                    repartidorDisponible = repartidor;
+                    break;
+                }
+            }
+        }
+        if(repartidorDisponible != null){
+            //Asignar producto al repartidor
+            repartidorDisponible.entregarProducto(p);
+            
+            // Sincronizar sobre el producto retirado
+            synchronized (productoActual) {
+                System.out.println("Despachador: El producto " + productoActual.getId() + " ha sido retirado de bodega"
                                 + "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado() + "\n");
-            // Espera pasivamente sobre el producto hasta que sea recogido por un repartidor
-            try {
-                productoActual.wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                
             }
         }
     }
