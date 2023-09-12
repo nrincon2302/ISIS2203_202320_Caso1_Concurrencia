@@ -1,55 +1,54 @@
 import java.util.ArrayList;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 public class Despachador extends Thread {
     // ================== ATRIBUTOS ==================
-    private Bodega bodega; // La bodega se comparte con los productores, no estática (hay un despachador)
+    private final Bodega bodega; // La bodega se comparte con los productores, no estática (hay un despachador)
     private Producto productoActual; // El despachador tiene sólo un producto en su poder en un momento dado
     private ArrayList<Repartidor> repartidores; // El despachador conoce a los repartidores
     private int totalProductos; // El despachador es el que conoce cuántos productos hay que entregar en total
     private int productosEntregados; // Contador para saber cuántos han sido entregados en un momento dado
-    private CyclicBarrier barrera;
 
     // ================== CONSTRUCTOR ==================
-    public Despachador(Bodega pBodega, int pTotal, CyclicBarrier pBarrera) {
+    public Despachador(Bodega pBodega, int pTotal) {
         bodega = pBodega;
         this.productoActual = null; // En principio, no tiene ningún producto a la mano
         this.repartidores = new ArrayList<>();
         this.totalProductos = pTotal;
         this.productosEntregados = 0;
-        this.barrera = pBarrera;
     }
 
     // ================== MÉTODOS ==================
     @Override
     public void run() {
-        try {
-            barrera.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (BrokenBarrierException e) {
-            throw new RuntimeException(e);
-        }
-
         // Mientras que la bodega esté vacía, espera activamente realizando otro método no muy largo
         while (bodega.darDisponibilidad() == bodega.darTamanio()) {
             esperarActivamente();
         }
-        // Si hay un producto en bodega, puede retirarlo
+        // Si hay un producto en bodega, puede retirarlo, pero es try porque podría ser nulo (NullPointer)
         Producto p = retirarDeBodega();
         // Se cambia el estado del producto a En Despacho y se asigna el producto actual del despachador
-        p.cambiarEstado("En despacho");
         productoActual = p;
+        synchronized (productoActual) {
+            productoActual.cambiarEstado("En despacho");
+            System.out.println("Despachador: Se ha retirado de la bodega el Producto " + productoActual.getId() +
+                    "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
+            try {
+                productoActual.wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         // Intenta entregarle un producto a un repartidor que esté disponible
-        while (productoActual != null) {
-            for (Repartidor repartidor : repartidores) {
-                // Si el repartidor está disponible, su producto actual es null
-                if (repartidor.getProductoActual() == null) {
-                    productoActual.cambiarEstado("Despachado");
-                    repartidor.recogerProducto(productoActual);
-                    productoActual = null;
+        synchronized (productoActual) {
+            while (productoActual != null) {
+                for (Repartidor repartidor : repartidores) {
+                    // Si el repartidor está disponible, su producto actual es null
+                    if (repartidor.getProductoActual() == null) {
+                        productoActual.cambiarEstado("Despachado");
+                        repartidor.recogerProducto(productoActual);
+                        productoActual = null;
+                    }
                 }
             }
         }
@@ -82,7 +81,7 @@ public class Despachador extends Thread {
         productosEntregados ++;
     }
 
-    public Producto retirarDeBodega() {
+    public synchronized Producto retirarDeBodega() {
         // Retira un producto de la bodega y lo retorna
         return bodega.quitarDeBodega();
     }

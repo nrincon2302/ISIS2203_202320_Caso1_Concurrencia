@@ -1,32 +1,19 @@
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-
 public class Productor extends Thread {
     // ================== ATRIBUTOS ==================
     private int id;
     private static Bodega bodega; // La bodega es compartida por todos los Productores
     private int cantidadAProducir;
-    private CyclicBarrier barrera;
 
     // ================== CONSTRUCTOR ==================
-    public Productor(int pId, Bodega pBodega, int pCantidad, CyclicBarrier pBarrera) {
+    public Productor(int pId, Bodega pBodega, int pCantidad) {
         this.id = pId;
         bodega = pBodega;
         this.cantidadAProducir = pCantidad;
-        this.barrera = pBarrera;
     }
 
     // ================== MÉTODOS ==================
     @Override
     public void run() {
-        try {
-            barrera.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (BrokenBarrierException e) {
-            throw new RuntimeException(e);
-        }
-
         for (int i=0; i<cantidadAProducir; i++) {
             // Producir la cantidad de productos que tiene asignado este Productor
             Producto producto = producir();

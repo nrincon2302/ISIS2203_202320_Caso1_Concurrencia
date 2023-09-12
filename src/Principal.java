@@ -1,8 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.Arrays;
 
 public class Principal {
 
@@ -20,6 +19,21 @@ public class Principal {
         return null;
     }
 
+    public static int[] generarArregloDeProductos(int totalProductos, int numProductores) {
+        int[] arregloProductos = new int[numProductores]; // Arreglo de N posiciones
+        int productosPorProductor = totalProductos / numProductores; // Dividir equitativamente parte entera
+        int productosRestantes = totalProductos % numProductores; // Manejar residuos que haya
+
+        for (int i = 0; i < numProductores; i++) {
+            arregloProductos[i] = productosPorProductor; // Distribuir los productos por productor
+            if (productosRestantes > 0) { // Si hay residuo, distribuir hasta que se complete todo
+                arregloProductos[i] ++;
+                productosRestantes --;
+            }
+        }
+        return arregloProductos;
+    }
+
     public static void main(String[] args) {
         System.out.println("¡Bienvenid@ a la planta de producción!");
         System.out.println();
@@ -29,43 +43,33 @@ public class Principal {
         int TAM = Integer.parseInt(input("Ingrese un tamaño de almacenamiento para la bodega"));
         int totalProductos = Integer.parseInt(input("Ingrese el total de productos a producir"));
 
+        // Asignación de la cantidad a producir de forma aleatoria
+        int[] productosPorProductor = generarArregloDeProductos(totalProductos, N);
+
         System.out.println();
         System.out.println("Usted ha ingresado los siguientes parámetros: \n" +
                             "NÚMERO DE PRODUCTORES: " + N + "\n" +
                             "NÚMERO DE REPARTIDORES: " + M + "\n" +
                             "TAMAÑO DE LA BODEGA: " + TAM + "\n" +
-                            "TOTAL A PRODUCIR: " + totalProductos + "\n");
+                            "TOTAL A PRODUCIR: " + totalProductos + "\n" +
+                            "PRODUCTOS POR PRODUCTOR: " + Arrays.toString(productosPorProductor) + "\n");
         System.out.println("Inicia el proceso... \n");
-
-        int numThreads = N + M + 1 + 1; // Productores + Despachador + Repartidores + Principal
-        CyclicBarrier barrera = new CyclicBarrier(numThreads);
 
         // Creación de la Bodega del programa
         Bodega bodega = new Bodega(TAM);
 
-        // Asignación de la cantidad a producir de forma aleatoria
-
-
         // Creación e inicialización de los Threads Productores
         for (int p=1; p<=N; p++) {
-            new Productor(p, bodega, 4, barrera).start();
+            new Productor(p, bodega, productosPorProductor[p-1]).start();
         }
 
         // Creación e inicialización del Thread Despachador
-        Despachador despachador = new Despachador(bodega, totalProductos, barrera);
+        Despachador despachador = new Despachador(bodega, totalProductos);
         despachador.start();
 
         // Creación e inicialización de los Threads Repartidores
         for (int r=0; r<M; r++) {
-            new Repartidor(r, despachador, barrera).start();
-        }
-
-        try {
-            barrera.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (BrokenBarrierException e) {
-            throw new RuntimeException(e);
+            new Repartidor(r, despachador).start();
         }
     }
 }

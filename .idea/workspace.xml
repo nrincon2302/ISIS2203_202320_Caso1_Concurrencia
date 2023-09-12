@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2f3a8e07-a051-455d-86d5-60158b3c14c9" name="Changes" comment="Todo implementado. Falla despachador" />
+    <list default="true" id="2f3a8e07-a051-455d-86d5-60158b3c14c9" name="Changes" comment="Cambios en Repartidor">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Despachador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Despachador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Principal.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Principal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Productor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Productor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Repartidor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Repartidor.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -89,7 +95,15 @@
       <option name="project" value="LOCAL" />
       <updated>1694488667027</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Cambios en Repartidor">
+      <option name="closed" value="true" />
+      <created>1694489105391</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1694489105391</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -101,7 +115,8 @@
     <MESSAGE value="Estilo de print" />
     <MESSAGE value="Cambios más recientes, no funciona Despachador ni Repartidor :(" />
     <MESSAGE value="Todo implementado. Falla despachador" />
-    <option name="LAST_COMMIT_MESSAGE" value="Todo implementado. Falla despachador" />
+    <MESSAGE value="Cambios en Repartidor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cambios en Repartidor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
