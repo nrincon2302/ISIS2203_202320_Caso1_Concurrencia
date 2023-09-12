@@ -40,15 +40,13 @@ public class Despachador extends Thread {
         }
 
         // Intenta entregarle un producto a un repartidor que esté disponible
-        synchronized (productoActual) {
-            while (productoActual != null) {
-                for (Repartidor repartidor : repartidores) {
-                    // Si el repartidor está disponible, su producto actual es null
-                    if (repartidor.getProductoActual() == null) {
-                        productoActual.cambiarEstado("Despachado");
-                        repartidor.recogerProducto(productoActual);
-                        productoActual = null;
-                    }
+        while (productoActual != null) {
+            for (Repartidor repartidor : repartidores) {
+                // Si el repartidor está disponible, su producto actual es null
+                if (repartidor.getProductoActual() == null) {
+                    productoActual.cambiarEstado("Despachado");
+                    repartidor.recogerProducto(productoActual);
+                    productoActual = null;
                 }
             }
         }
@@ -58,7 +56,7 @@ public class Despachador extends Thread {
             try {
                 System.out.println("Despachador: No hay repartidores disponibles. No se despachó el producto." +
                                     "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
-                wait();
+                this.wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

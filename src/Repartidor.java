@@ -46,7 +46,7 @@ public class Repartidor extends Thread {
         this.productoActual = producto;
     }
 
-    public void repartirProducto() {
+    public synchronized void repartirProducto() {
         // Cuando un producto se encuentra en reparto, esto dura aleatorio entre 3 y 10 segundos
         int tiempoEspera = new Random().nextInt(7000) + 3000;
         try {
