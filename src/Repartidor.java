@@ -46,7 +46,10 @@ public class Repartidor extends Thread {
             }
             // Cuando tenga un producto para repartir
             productoActual.cambiarEstado("En reparto");
-
+            repartirProducto();
+            if (despachador.getProductosEntregados() == despachador.getTotalProductos() && !getFinalizado()) {
+                finalizarEjecucion();
+            }
         }
     }
 
@@ -60,11 +63,13 @@ public class Repartidor extends Thread {
         int tiempoEspera = new Random().nextInt(7000) + 3000;
         try {
             // Para simular el reparto, se pone a dormir la cantidad de tiempo dada
-            System.out.println("Repartidor " + id + ": Entregando el producto " + productoActual.getId() + "..." +
+            System.out.println("Repartidor " + darId() + ": Entregando el producto " + productoActual.getId() + "..." +
                                 "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
             Thread.sleep(tiempoEspera);
             productoActual.cambiarEstado("Entregado");
             despachador.agregarEntregado();
+            System.out.println("\nProducto" + productoActual.getId() + ": " + productoActual.getEstado());
+            productoActual = null;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
