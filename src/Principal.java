@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class Principal {
 
@@ -35,6 +37,9 @@ public class Principal {
                             "TOTAL A PRODUCIR: " + totalProductos + "\n");
         System.out.println("Inicia el proceso... \n");
 
+        int numThreads = N + M + 1 + 1; // Productores + Despachador + Repartidores + Principal
+        CyclicBarrier barrera = new CyclicBarrier(numThreads);
+
         // Creación de la Bodega del programa
         Bodega bodega = new Bodega(TAM);
 
@@ -43,16 +48,24 @@ public class Principal {
 
         // Creación e inicialización de los Threads Productores
         for (int p=1; p<=N; p++) {
-            new Productor(p, bodega, 4).start();
+            new Productor(p, bodega, 4, barrera).start();
         }
 
         // Creación e inicialización del Thread Despachador
-        Despachador despachador = new Despachador(bodega, totalProductos);
+        Despachador despachador = new Despachador(bodega, totalProductos, barrera);
         despachador.start();
 
         // Creación e inicialización de los Threads Repartidores
         for (int r=0; r<M; r++) {
-            new Repartidor(r, bodega, despachador).start();
+            new Repartidor(r, despachador, barrera).start();
+        }
+
+        try {
+            barrera.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (BrokenBarrierException e) {
+            throw new RuntimeException(e);
         }
     }
 }

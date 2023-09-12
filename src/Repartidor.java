@@ -1,71 +1,92 @@
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class Repartidor extends Thread {
     // ================== ATRIBUTOS ==================
     private int id;
-    private static Bodega bodega;
-    private static Despachador despachador;
-    private Producto productoActual;
+    private Despachador despachador;
+    private Producto productoActual; // El repartidor tiene sólo un producto en su poder en un momento dado
+    private boolean finalizado; // Indica si el repartidor debe continuar o ya finaliza su ejecución
+    private CyclicBarrier barrera;
 
     // ================== CONSTRUCTOR ==================
-    public Repartidor(int pId, Bodega pBodega, Despachador pDespachador) {
+    public Repartidor(int pId, Despachador pDespachador, CyclicBarrier pBarrera) {
         this.id = pId;
-        bodega = pBodega;
-        productoActual = null;
-        despachador = pDespachador;
-        despachador.agregarRepartidor(this);
+        this.despachador = pDespachador;
+        this.productoActual = null; // En principio, no tiene ningún producto a la mano
+        this.finalizado = false;
+        despachador.agregarRepartidor(this); // Vincula la asociación con el despachador
+        this.barrera = pBarrera;
     }
 
     // ================== MÉTODOS ==================
     @Override
     public void run() {
-        while (despachador.getTotalACompletar() - despachador.darCompletados() != 0) {
-            while ((productoActual.equals(null))) {
-                try {
-                    despachador.wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        try {
+            barrera.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (BrokenBarrierException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Siempre que no deba haber finalizado el thread, while(true)
+        while (!finalizado) {
+            // Sincronizar sobre el despachador porque en Despachador se sincronizó sobre this
+            synchronized (despachador) {
+                while (productoActual == null) {
+                    try {
+                        // Espera pasivamente sobre el despachador hasta que le pase un producto
+                        despachador.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
-            recogerProducto();
-            System.out.println("Repartidor " + id + ": He recogido el producto " + productoActual.getId() +
-                                "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
-            repartirProducto();
-            System.out.println("Repartidor " + id + ": He entregado el producto " + productoActual.getId() +
-                    "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
+            // Cuando tenga un producto para repartir
+            productoActual.cambiarEstado("En reparto");
+
         }
     }
 
-    public synchronized void recogerProducto() {
-        // Recoge el producto del despachador si tiene alguno disponible para reparto
-        while (despachador.darProductoActual().equals(null)) {
-            // Espera pasivamente en caso de que no haya producto en el despachador
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        productoActual = despachador.darProductoActual();
-        despachador.despacharProducto();
-        productoActual.cambiarEstado("En reparto");
+    public void recogerProducto(Producto producto) {
+        // Asigna el producto actual al que se pasa por parámetro
+        this.productoActual = producto;
     }
 
     public void repartirProducto() {
         // Cuando un producto se encuentra en reparto, esto dura aleatorio entre 3 y 10 segundos
-        Random r = new Random();
-        int tiempoEspera = r.nextInt(10000-3000) + 3000;
+        int tiempoEspera = new Random().nextInt(7000) + 3000;
         try {
             // Para simular el reparto, se pone a dormir la cantidad de tiempo dada
-            sleep(tiempoEspera);
+            System.out.println("Repartidor " + id + ": Entregando el producto " + productoActual.getId() + "..." +
+                                "\nProducto " + productoActual.getId() + ": " + productoActual.getEstado());
+            Thread.sleep(tiempoEspera);
             productoActual.cambiarEstado("Entregado");
-            despachador.agregarCompletado();
+            despachador.agregarEntregado();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Producto darProductoActual() {
+    public synchronized void finalizarEjecucion() {
+        // Sincronizado para forzar la terminación uno por uno de los Repartidores
+        this.finalizado = true;
+    }
+
+    public int darId() {
+        // Retorna el indicador único de cada repartidor
+        return id;
+    }
+
+    public Producto getProductoActual() {
+        // Retorna el producto que el repartidor tiene en este momento
         return productoActual;
+    }
+
+    public boolean getFinalizado() {
+        // Retorna si el thread de repartidor ha finalizado o no
+        return finalizado;
     }
 }

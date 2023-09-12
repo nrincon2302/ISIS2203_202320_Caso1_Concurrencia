@@ -1,24 +1,37 @@
 import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class Despachador extends Thread {
     // ================== ATRIBUTOS ==================
     private Bodega bodega; // La bodega se comparte con los productores, no estática (hay un despachador)
     private Producto productoActual; // El despachador tiene sólo un producto en su poder en un momento dado
     private ArrayList<Repartidor> repartidores; // El despachador conoce a los repartidores
-    private int totalACompletar;
-    private int completados; // El despachador es el que conoce cuántos productos hay que entregar en total
+    private int totalProductos; // El despachador es el que conoce cuántos productos hay que entregar en total
+    private int productosEntregados; // Contador para saber cuántos han sido entregados en un momento dado
+    private CyclicBarrier barrera;
 
     // ================== CONSTRUCTOR ==================
-    public Despachador(Bodega pBodega, int pTotal) {
+    public Despachador(Bodega pBodega, int pTotal, CyclicBarrier pBarrera) {
         bodega = pBodega;
         this.productoActual = null; // En principio, no tiene ningún producto a la mano
         this.repartidores = new ArrayList<>();
-        this.totalACompletar = pTotal;
+        this.totalProductos = pTotal;
+        this.productosEntregados = 0;
+        this.barrera = pBarrera;
     }
 
     // ================== MÉTODOS ==================
     @Override
     public void run() {
+        try {
+            barrera.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (BrokenBarrierException e) {
+            throw new RuntimeException(e);
+        }
+
         // Mientras que la bodega esté vacía, espera activamente realizando otro método no muy largo
         while (bodega.darDisponibilidad() == bodega.darTamanio()) {
             esperarActivamente();
@@ -33,7 +46,8 @@ public class Despachador extends Thread {
         while (productoActual != null) {
             for (Repartidor repartidor : repartidores) {
                 // Si el repartidor está disponible, su producto actual es null
-                if (repartidor.darProductoActual() == null) {
+                if (repartidor.getProductoActual() == null) {
+                    productoActual.cambiarEstado("Despachado");
                     repartidor.recogerProducto(productoActual);
                     productoActual = null;
                 }
@@ -53,19 +67,19 @@ public class Despachador extends Thread {
 
     }
 
-    public int getTotalACompletar() {
+    public int getTotalProductos() {
         // Retorna el total de productos que deben ser procesados en la ejecución
-        return totalACompletar;
+        return totalProductos;
     }
 
-    public int darCompletados() {
+    public int getProductosEntregados() {
         // Retorna la cantidad de productos que han sido completamente procesados hasta el momento
-        return completados;
+        return productosEntregados;
     }
 
-    public void agregarCompletado() {
+    public void agregarEntregado() {
         // Incrementa el contador con la cantidad de productos completados hasta el momento
-        completados ++;
+        productosEntregados ++;
     }
 
     public Producto retirarDeBodega() {
@@ -75,7 +89,6 @@ public class Despachador extends Thread {
 
     public void esperarActivamente() {
         // Se realiza una acción cualquiera no tan larga
-        System.out.println("Despachador: Esperando a que haya productos en bodega...\n");
         int contador = 0;
         for (int j=0; j<1000; j++) {
             contador += j;
@@ -90,17 +103,5 @@ public class Despachador extends Thread {
     public void agregarRepartidor(Repartidor repartidor) {
         // Agrega un repartidor al listado de repartidores de la planta
         repartidores.add(repartidor);
-    }
-
-    public synchronized void despacharProducto() {
-        // Sincronizar sobre el producto del despachador en un momento dado
-        while (productoActual != null) {
-            try {
-                productoActual.wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
     }
 }
